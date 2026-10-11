@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dusk FM — Chill Music Player</title>
+<meta name="description" content="A cozy chill music player: lo-fi beats, ambient soundscapes, visualizer and endless generative mode." />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+  <div class="stars" id="stars"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🌙</span>
+    <div>
+      <h1>Dusk FM</h1>
+      <p>chill music player</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="themeBtn" class="chip" title="Toggle dusk / dawn theme">☀️ dawn</button>
+    <button id="sleepBtn" class="chip" title="Sleep timer">⏲ sleep: off</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- Player card -->
+  <section class="card player" aria-label="Music player">
+    <canvas id="viz" width="640" height="180" aria-label="Audio visualizer"></canvas>
+
+    <div class="track-row">
+      <div class="cover" id="cover" aria-hidden="true">
+        <span id="coverEmoji">🌊</span>
+        <div class="cover-glow"></div>
+      </div>
+      <div class="track-meta">
+        <p class="eyebrow" id="trackTag">lo-fi • 72 bpm</p>
+        <h2 id="trackTitle">Midnight Static</h2>
+        <p id="trackArtist">Dusk FM House Band</p>
+        <div class="badges">
+          <span class="badge" id="modeBadge">● ready</span>
+          <span class="badge dim" id="timeBadge">0:00 / 0:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <span id="curTime">0:00</span>
+      <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek" />
+      <span id="durTime">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button id="shuffleBtn" class="icon-btn" title="Shuffle (S)" aria-pressed="false">🔀</button>
+      <button id="prevBtn" class="icon-btn big" title="Previous (←)">⏮</button>
+      <button id="playBtn" class="play" title="Play / Pause (Space)" aria-label="Play">▶</button>
+      <button id="nextBtn" class="icon-btn big" title="Next (→)">⏭</button>
+      <button id="repeatBtn" class="icon-btn" title="Repeat (R)" aria-pressed="false">🔁</button>
+    </div>
+
+    <div class="sub-controls">
+      <label class="vol">🔈 <input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume" /> <span id="volLabel">80</span></label>
+      <div class="speed-row">
+        <button class="mini" id="rateDown" title="Slower">−</button>
+        <span class="mini-label" id="rateLabel" title="Playback speed">1.0×</span>
+        <button class="mini" id="rateUp" title="Faster">+</button>
+      </div>
+    </div>
+
+    <div class="gen-row">
+      <button id="genBtn" class="gen-btn" aria-pressed="false">
+        <span class="pulse"></span>
+        ✦ endless generative lo-fi
+      </button>
+      <p class="hint">No files? Press play on <b>endless mode</b> — it composes cozy chords live with Web Audio. No internet needed.</p>
+    </div>
+
+    <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+  </section>
+
+  <!-- Side column -->
+  <section class="column">
+    <div class="card">
+      <div class="card-head">
+        <h3>Playlist</h3>
+        <div class="head-btns">
+          <label class="upload">+ add files<input id="fileInput" type="file" accept="audio/*" multiple hidden /></label>
+          <button id="clearUploads" class="link-btn" title="Remove uploaded files">clear</button>
+        </div>
+      </div>
+      <p class="sub">Demo streams + your uploads. Drag &amp; drop audio files anywhere.</p>
+      <ol id="playlist" class="playlist"></ol>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Ambience mixer</h3><span class="sub">layer under any track</span></div>
+      <div class="amb-grid">
+        <button class="amb" data-amb="rain" aria-pressed="false"><span>🌧️</span><b>Rain</b><input type="range" min="0" max="100" value="40" aria-label="Rain volume" /></button>
+        <button class="amb" data-amb="fire" aria-pressed="false"><span>🔥</span><b>Fireplace</b><input type="range" min="0" max="100" value="40" aria-label="Fireplace volume" /></button>
+        <button class="amb" data-amb="night" aria-pressed="false"><span>🦗</span><b>Night</b><input type="range" min="0" max="100" value="35" aria-label="Night volume" /></button>
+        <button class="amb" data-amb="vinyl" aria-pressed="false"><span>💿</span><b>Vinyl</b><input type="range" min="0" max="100" value="30" aria-label="Vinyl crackle volume" /></button>
+      </div>
+    </div>
+
+    <div class="card keys">
+      <h3>Shortcuts</h3>
+      <ul>
+        <li><kbd>space</kbd> play / pause</li>
+        <li><kbd>←</kbd><kbd>→</kbd> prev / next</li>
+        <li><kbd>S</kbd> shuffle &nbsp; <kbd>R</kbd> repeat &nbsp; <kbd>G</kbd> generative</li>
+        <li><kbd>↑</kbd><kbd>↓</kbd> volume</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>made for slow evenings • demo audio via SoundHelix • uploads never leave your browser</p>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
