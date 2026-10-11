@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WALLS OF RUIN: Titan Siege — Open World Squad Game</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🗡️</text></svg>" />
+<meta name="description" content="Original open-world 3D titan-siege game for desktop. Swing with omni-gear, slay giants, defend the walled city with your online squad." />
+<link rel="stylesheet" href="style.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="crosshair">+</div>
+    <div id="topbar">
+      <div id="mission-banner">MISSION: <span id="mission-text">Defend the Outer District</span></div>
+      <div id="server-pill"><span class="dot"></span><span id="server-name">EU-1 • Wall Rose Front</span> • <span id="ping">42ms</span> • <span id="online-count">12 online</span></div>
+    </div>
+    <div id="left-stats">
+      <div class="bar-wrap"><label>HP</label><div class="bar"><div id="hp-fill"></div></div></div>
+      <div class="bar-wrap"><label>GAS</label><div class="bar"><div id="gas-fill"></div></div></div>
+      <div class="bar-wrap"><label>BLADES</label><div class="bar"><div id="blade-fill"></div></div></div>
+      <div id="stats-row">
+        <div>⛰ Altitude <b id="stat-alt">0m</b></div>
+        <div>💨 Speed <b id="stat-speed">0</b></div>
+        <div>⚔️ Kills <b id="stat-kills">0</b></div>
+        <div>🏆 Score <b id="stat-score">0</b></div>
+      </div>
+      <div id="hooks-status"><span id="hookL">◉ L ready</span> <span id="hookR">◉ R ready</span></div>
+    </div>
+    <div id="killfeed"></div>
+    <div id="chatbox"><div id="chat-log"></div></div>
+    <div id="wave-panel">
+      <div>WAVE <b id="wave-num">1</b> — Titans left: <b id="titans-left">0</b></div>
+      <div id="minimap-wrap"><canvas id="minimap" width="150" height="150"></canvas></div>
+    </div>
+    <div id="controls-hint">
+      <b>WASD</b> move • <b>Mouse</b> look • <b>Q / E or L/R Click</b> fire anchors • <b>Space</b> boost • <b>F</b> slash • <b>R</b> swap blades • <b>Shift</b> sprint • <b>M</b> map • <b>Enter</b> chat • <b>Esc</b> menu
+    </div>
+    <div id="hitmarker">SLASH!</div>
+    <div id="damage-vignette"></div>
+    <div id="respawn-overlay" class="hidden"><h2>YOU WERE GRABBED</h2><p>Respawning at supply depot in <span id="respawn-timer">3</span>…</p></div>
+  </div>
+
+  <!-- Title / lobby screen -->
+  <div id="menu-screen">
+    <div class="menu-card">
+      <div class="eyebrow">ORIGINAL FAN-INSPIRED OPEN WORLD • DESKTOP 3D • SQUAD ONLINE (SIM)</div>
+      <h1>WALLS <span>OF RUIN</span></h1>
+      <p class="subtitle">TITAN SIEGE — open-world co-op siege. Not affiliated with Attack on Titan. All characters, titans & city are original.</p>
+      <div class="menu-grid">
+        <div>
+          <h3>1 · Choose your scout</h3>
+          <div id="hero-select">
+            <button class="hero selected" data-hero="Vanguard">🗡️ Vanguard<br><small>balanced blades</small></button>
+            <button class="hero" data-hero="Skirmisher">💨 Skirmisher<br><small>+gas, fast swing</small></button>
+            <button class="hero" data-hero="Bulwark">🛡️ Bulwark<br><small>+HP, heavy slash</small></button>
+          </div>
+          <h3>2 · Join a front (online sim)</h3>
+          <div id="server-list">
+            <button class="server selected" data-server="EU-1 • Wall Rose Front" data-ping="42">EU-1 • Wall Rose Front <span>12/24 • 42ms</span></button>
+            <button class="server" data-server="US-E • Shiganshina Echo" data-ping="88">US-E • Shiganshina Echo <span>18/24 • 88ms</span></button>
+            <button class="server" data-server="ASIA-2 • Forest of Giants" data-ping="121">ASIA-2 • Forest of Giants <span>9/24 • 121ms</span></button>
+          </div>
+          <label class="row"><input type="checkbox" id="opt-squad" checked /> Fill squad with online scouts (simulated players)</label>
+          <label class="row"><input type="checkbox" id="opt-horde" /> Horde mode (double titans)</label>
+        </div>
+        <div>
+          <h3>Briefing</h3>
+          <ul class="brief">
+            <li>🌆 Open world: walled city + forest + fields + river (~1km²). Explore freely.</li>
+            <li>🪝 Omni-gear: <b>Q / Left-click</b> left anchor, <b>E / Right-click</b> right anchor, <b>Space</b> gas boost. Swing, then <b>F</b> to slash napes.</li>
+            <li>👹 Titans have one weak point: the glowing <b>nape</b>. Hit it fast for a kill.</li>
+            <li>⛽ Refill gas & blades at blue <b>supply depots</b>.</li>
+            <li>🌐 Online sim: AI squadmates fight, chat & share kills. Open this page in 2 tabs to see real tab-to-tab presence via BroadcastChannel.</li>
+          </ul>
+          <button id="btn-deploy">▶ DEPLOY TO THE WALLS</button>
+          <button id="btn-how" class="ghost">How to play / credits</button>
+          <p class="tiny">Desktop + mouse recommended. Click canvas to lock pointer. Low-spec mode auto-enables on weak GPUs.</p>
+          <div id="how-panel" class="hidden">
+            <p><b>Original work.</b> No Attack on Titan assets, names, music or story are used. Mechanics (grapple-swing + nape weak point) are a genre homage.</p>
+            <p><b>Multiplayer note:</b> this static build ships with a full simulated squad + local leaderboard. Networking hooks (<code>NetSim</code> in game.js) are ready to swap for a WebSocket server without changing gameplay code.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause -->
+  <div id="pause-screen" class="hidden">
+    <div class="menu-card small">
+      <h2>Paused</h2>
+      <p>Pointer unlocked. Squad holds the line.</p>
+      <button id="btn-resume">Resume</button>
+      <button id="btn-quit" class="ghost">Abandon post (menu)</button>
+      <div id="leaderboard"><h3>Squad leaderboard (this browser)</h3><ol id="lb-list"></ol></div>
+    </div>
+  </div>
+
+  <div id="loading"><div class="spin"></div><p>Building walled city…</p></div>
+  <div id="toast"></div>
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
